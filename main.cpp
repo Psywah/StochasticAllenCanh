@@ -110,7 +110,7 @@ int main()
   a.dt = dt;
   AllenCahn2D::LinearForm L(V); 
   L.phi0 = phi0; L.eps = epsilon; L.dt = dt; L.dw=dw; L.sigma= sigma;
-  EnergyForm::functional energyform(mesh); 
+  EnergyForm::Functional energyform(mesh); 
   energyform.eps =epsilon; energyform.u = phi;
   SpectrumForm::Form_a stiff(V,V); 
   stiff.eps = epsilon; stiff.u = phi;
