@@ -21,6 +21,8 @@
 #include <dolfin.h>
 #include <math.h>
 #include "AllenCahn2D.h"
+#include "EnergyForm.h"
+#include "SpectrumForm.h"
 
 #define EPS 0.01
 #define DT 0.0001
@@ -108,8 +110,12 @@ int main()
   a.dt = dt;
   AllenCahn2D::LinearForm L(V); 
   L.phi0 = phi0; L.eps = epsilon; L.dt = dt; L.dw=dw; L.sigma= sigma;
+  EnergyForm::functional energyform(mesh); 
+  energyform.eps =epsilon; energyform.u = phi;
+  SpectrumForm::Form_a stiff(V,V); 
+  stiff.eps = epsilon; stiff.u = phi;
+  SpectrumForm::Form_m mass(V,V); 
 
-  
   // Save initial condition to file
   File file("./allen_cahn.pvd");
   //  file << phi0;
@@ -124,6 +130,8 @@ int main()
   {
       // Update for next time step
       solve(a == L, *phi);
+      double e = assemble(energyform);
+      info("energy: %f", e);
       // update time 
       t += DT;
       *phi0->vector() = *phi->vector();
