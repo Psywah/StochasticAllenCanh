@@ -91,19 +91,18 @@ int main()
   // Function phi(V);
   // Function phi0(V);
   auto V = std::make_shared<AllenCahn2D::FunctionSpace>(reference_to_no_delete_pointer(mesh)); 
-  //auto phi = std::make_shared<Function>(V);
-  //auto phi0 = std::make_shared<Function>(V);
+  auto phi = std::make_shared<Function>(V);
+  auto phi0 = std::make_shared<Function>(V);
   
 
   // Initial value 
-  //InitialConditions u_initial;
-  //  phi0.interpolate(u_initial);
-  //phi0->interpolate(u_initial);
+  InitialConditions u_initial;
+  phi0->interpolate(u_initial);
   // Bilinear form 
-  //AllenCahn2D::BilinearForm a(V, V, dt);
-  //AllenCahn2D::LinearForm L(V, phi0, epsilon, dt); 
+  AllenCahn2D::BilinearForm a(V, V, dt);
+  AllenCahn2D::LinearForm L(V, phi0, epsilon, dt); 
 
-  /*
+  
   // Save initial condition to file
   File file("./allen_cahn.pvd");
   //  file << phi0;
@@ -141,6 +140,6 @@ int main()
 
   //plot(mesh);
   interactive();
-  */
+  
   return 0;
 }
