@@ -116,6 +116,43 @@ int main()
   stiff.eps = epsilon; stiff.u = phi;
   SpectrumForm::Form_m mass(V,V); 
 
+
+#ifdef HAS_SLEPC
+  info("has slepc");
+auto A = std::make_shared<PETScMatrix>();
+auto M = std::make_shared<PETScMatrix>();
+assemble(*A, stiff);
+assemble(*M, mass);
+#endif
+    //               // Create eigensolver
+    //                 SLEPcEigenSolver esolver(A);
+    //
+    //                   // Compute all eigenvalues of A x = \lambda x
+    //                     esolver.solve();
+    //
+    //                       // Extract largest (first, n =0) eigenpair
+    //                         double r, c;
+    //                           PETScVector rx, cx;
+    //                             esolver.get_eigenpair(r, c, rx, cx, 0);
+    //
+    //                               cout << "Largest eigenvalue: " << r << endl;
+    //
+    //                                 // Initialize function with eigenvector
+    //                                   Function u(V);
+    //                                     *u.vector() = rx;
+    //
+    //                                       // Plot eigenfunction
+    //                                         plot(u);
+    //                                           interactive();
+    //
+    //                                             #else
+    //
+    //                                               dolfin::cout << "SLEPc must be installed to run this demo." << dolfin::endl;
+    //
+    //                                                 #endif
+    //
+    //
+
   // Save initial condition to file
   File file("./allen_cahn.pvd");
   //  file << phi0;
