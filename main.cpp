@@ -73,15 +73,19 @@ int main()
 //   Point p0(-1, -1);
 //   Point p1(1, 1);
 //   RectangleMesh mesh(p0, p1, N, N);
-  //auto mesh = std::make_shared<UnitSquareMesh>(32, 32);   
-  UnitSquareMesh mesh(32,32);
+  auto mesh = std::make_shared<UnitSquareMesh>(32, 32);   
+  //UnitSquareMesh mesh(32,32);
   // Time stepping and model parameters
   // Constant epsilon(EPS);
   // Constant dt(DT);
   
   
   auto epsilon = std::make_shared<Constant>(EPS);
+  auto sigma = std::make_shared<Constant>(SIGMA);
+  //auto dw = std::make_shared<Constant>(dolfin::rand() - .5);
+  auto dw = std::make_shared<Constant>(0.0);
   auto dt = std::make_shared<Constant>(DT); 
+
   
   double t = 0.0;
   double T = END_T;
@@ -90,7 +94,7 @@ int main()
   // AllenCahn2D::FunctionSpace V(mesh);
   // Function phi(V);
   // Function phi0(V);
-  auto V = std::make_shared<AllenCahn2D::FunctionSpace>(reference_to_no_delete_pointer(mesh)); 
+  auto V = std::make_shared<AllenCahn2D::FunctionSpace>(mesh); 
   auto phi = std::make_shared<Function>(V);
   auto phi0 = std::make_shared<Function>(V);
   
@@ -99,8 +103,10 @@ int main()
   InitialConditions u_initial;
   phi0->interpolate(u_initial);
   // Bilinear form 
-  AllenCahn2D::BilinearForm a(V, V, dt);
-  AllenCahn2D::LinearForm L(V, phi0, epsilon, dt); 
+  AllenCahn2D::BilinearForm a(V, V);
+  a->dt = dt;
+  AllenCahn2D::LinearForm L(V, phi0); 
+  L->phi0 = phi0; L->epsilon = epsilon; L->dt = dt; L->dw=dw; L->sigma= sigma;
 
   
   // Save initial condition to file
