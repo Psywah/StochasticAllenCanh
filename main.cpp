@@ -26,6 +26,7 @@
 #define DT 0.0001
 #define SAVE_DT 1*DT
 #define END_T 5*DT
+#define SIGMA 0.1
 
 #define N 256
 
@@ -105,8 +106,8 @@ int main()
   // Bilinear form 
   AllenCahn2D::BilinearForm a(V, V);
   a.dt = dt;
-  AllenCahn2D::LinearForm L(V, phi0); 
-  L.phi0 = phi0; L.epsilon = epsilon; L.dt = dt; L.dw=dw; L.sigma= sigma;
+  AllenCahn2D::LinearForm L(V); 
+  L.phi0 = phi0; L.eps = epsilon; L.dt = dt; L.dw=dw; L.sigma= sigma;
 
   
   // Save initial condition to file
