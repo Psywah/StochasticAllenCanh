@@ -34,10 +34,12 @@ phi0 = Coefficient(P1)  # solution from previous converged step
 # parameter
 eps = Constant(triangle) # surface energy parameter
 dt = Constant(triangle)  # time step
+sigma = Constant(triangle)  # stochostic coefficient
+dw = Constant(triangle)  # stochostic number 
 
 # Compute the chemical potential df/dc
 a = phi*v*dx + dt*inner(grad(phi), grad(v))*dx 
-L = -dt/eps**2*(phi0*phi0*phi0 - phi0)*v*dx + phi0*v*dx 
+L = -dt/eps**2*(phi0*phi0*phi0 - phi0)*v*dx + phi0*v*dx  + sigma *dw*v*dx
 
 # end of file ## 
 
