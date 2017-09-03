@@ -104,9 +104,9 @@ int main()
   phi0->interpolate(u_initial);
   // Bilinear form 
   AllenCahn2D::BilinearForm a(V, V);
-  a->dt = dt;
+  a.dt = dt;
   AllenCahn2D::LinearForm L(V, phi0); 
-  L->phi0 = phi0; L->epsilon = epsilon; L->dt = dt; L->dw=dw; L->sigma= sigma;
+  L.phi0 = phi0; L.epsilon = epsilon; L.dt = dt; L.dw=dw; L.sigma= sigma;
 
   
   // Save initial condition to file
