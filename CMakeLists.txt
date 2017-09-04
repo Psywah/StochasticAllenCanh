@@ -5,8 +5,18 @@
 # Require CMake 3.5
 cmake_minimum_required(VERSION 3.5)
 
-set(PROJECT_NAME demo_poisson)
+set(PROJECT_NAME SAC)
 project(${PROJECT_NAME})
+
+# Set useful directory
+set(SAC_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(SAC_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+#set(NE_LIB_DIR ${CMAKE_CURRENT_BINARY_DIR}/lib)
+#set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR})
+#set(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/lib)
+include_directories(${SAC_INCLUDE_DIR})
+
+
 
 # Set CMake behavior
 cmake_policy(SET CMP0004 NEW)
@@ -52,8 +62,22 @@ else()
   include_directories(SYSTEM ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
 endif()
 
-# Executable
-add_executable(${PROJECT_NAME} main.cpp)
 
-# Target libraries
-target_link_libraries(${PROJECT_NAME} ${DOLFIN_LIBRARIES})
+file(GLOB SAC_LIB_SRC ${RC_DIR}/*.cpp)
+add_library(sac_lib SHARED ${SAC_LIB_SRC})
+
+# Executable
+file( GLOB EXESRC RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" Main*.cpp)
+{
+foreach( srcfile ${EXESRC} )
+    string( REGEX REPLACE "\\.[^\\.]*$" ".ex" exectmp ${srcfile} )
+    string( REGEX REPLACE "Main" "" execfile ${exectmp} )
+    #    message( "${execfile} ${srcfile}" )
+    add_executable( ${execfile} ./${srcfile} )
+
+    # Target libraries
+    target_link_libraries(${execfile} sac_lib ${DOLFIN_LIBRARIES})
+endforeach(srcfile)
+}
+
+

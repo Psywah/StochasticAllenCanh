@@ -27,9 +27,9 @@
 
 P1 = FiniteElement("Lagrange", triangle, 1)
 
-phi = TrialFunction(P1) # current solution
+u = TrialFunction(P1) # current solution
 v = TestFunction(P1)    # test function
-phi0 = Coefficient(P1)  # solution from previous converged step
+u0 = Coefficient(P1)  # solution from previous converged step
 
 # parameter
 eps = Constant(triangle) # surface energy parameter
@@ -38,8 +38,8 @@ sigma = Constant(triangle)  # stochostic coefficient
 dw = Constant(triangle)  # stochostic number 
 
 # Compute the chemical potential df/dc
-a = phi*v*dx + dt*inner(grad(phi), grad(v))*dx 
-L = -dt/eps**2*(phi0*phi0*phi0 - phi0)*v*dx + phi0*v*dx  + sigma *dw*v*dx
+a = u*v*dx + dt*inner(grad(u), grad(v))*dx 
+L = -dt/eps**2*(u0*u0*u0 - u0)*v*dx + u0*v*dx  + sigma *dw*v*dx
 
 # end of file ## 
 
