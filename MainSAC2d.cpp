@@ -13,7 +13,7 @@ int main()
 {
     // load parameters
     Parameters para("user_defined_parameters");
-    File para_file("../parameters.xml");
+    File para_file("./parameters.xml");
     para_file >> para;
     info(para, true);
 
