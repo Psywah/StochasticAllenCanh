@@ -1,4 +1,4 @@
-Stochostic Allen Canh (SAC) Simulation
+Stochastic Allen Canh (SAC) Simulation
 
 This repostory contains the notes on SAC and its simulation code.
 
