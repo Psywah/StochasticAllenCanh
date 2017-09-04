@@ -10,16 +10,21 @@
  */
 int main()
 {
+    // load parameters
     Parameters para("user_defined_parameters");
     File para_file("./parameters.xml");
     para_file >> para;
     info(para, true);
 
+    // generate mesh
     int Nc =(int)para(["NumberOfCellPerDirection"]);
     UniteSquareMesh mesh(Nc, Nc);
     
+    // define variational solver
     info("initializing....");
     SacSolver sac(mesh, para);
+
+    // solve
     info("solving....");
     sac.solve();
 

@@ -63,7 +63,7 @@ else()
 endif()
 
 
-file(GLOB SAC_LIB_SRC ${RC_DIR}/*.cpp)
+file(GLOB SAC_LIB_SRC ${SAC_SRC_DIR}/*.cpp)
 add_library(sac_lib SHARED ${SAC_LIB_SRC})
 
 # Executable
@@ -71,7 +71,7 @@ file( GLOB EXESRC RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" Main*.cpp)
 {
 foreach( srcfile ${EXESRC} )
     string( REGEX REPLACE "\\.[^\\.]*$" ".ex" exectmp ${srcfile} )
-    string( REGEX REPLACE "Main" "" execfile ${exectmp} )
+    string( REGEX REPLACE "Main" "run_" execfile ${exectmp} )
     #    message( "${execfile} ${srcfile}" )
     add_executable( ${execfile} ./${srcfile} )
 

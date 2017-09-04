@@ -167,7 +167,7 @@ SacSolver::SacSolver( Mesh& mesh, Parameters& _para): para(_para)
 
     std::map<std::string, std::shared_ptr<const GenericFunction>> coef_list
                 = { {"u",       _u},
-                    {"u0",      _u},
+                    {"u0",      _u0},
                     {"dw",      dw},
                     {"eps",     epsilon},
                     {"dt",      dt},
