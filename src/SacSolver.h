@@ -16,6 +16,7 @@ namespace dolfin
     virtual ~SacSolver() {}
 
     void save_solution(Function& u);
+    void save_solution(int sp, Function& u);
     double energy(Function& u);
     double spectrum(Function& u);
     void solve();

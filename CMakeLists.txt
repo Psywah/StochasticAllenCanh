@@ -68,7 +68,7 @@ add_library(sac_lib SHARED ${SAC_LIB_SRC})
 
 # Executable
 file( GLOB EXESRC RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" Main*.cpp)
-{
+
 foreach( srcfile ${EXESRC} )
     string( REGEX REPLACE "\\.[^\\.]*$" ".ex" exectmp ${srcfile} )
     string( REGEX REPLACE "Main" "run_" execfile ${exectmp} )
@@ -78,6 +78,6 @@ foreach( srcfile ${EXESRC} )
     # Target libraries
     target_link_libraries(${execfile} sac_lib ${DOLFIN_LIBRARIES})
 endforeach(srcfile)
-}
+
 
 

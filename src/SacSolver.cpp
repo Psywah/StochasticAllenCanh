@@ -13,20 +13,23 @@ using namespace dolfin;
 class InitialConditions : public Expression
 {
 public:
-  void eval(Array<double>& values, const Array<double>& x) const
-  {
-    double d = sqrt((x[0]-0.5)*(x[0]-0.5)+(x[1]-0.5)*(x[1]-0.5)) - 0.25;
-   // values[0] = tanh(d/sqrt(2)/EPS);
-   values[0] = tanh(d/(sqrt(2)*EPS));
-  }
+    InitialConditions(double eps): Expression(), EPS(eps)
+    {}
+    void eval(Array<double>& values, const Array<double>& x) const
+    {
+        double d = sqrt((x[0]-0.5)*(x[0]-0.5)+(x[1]-0.5)*(x[1]-0.5)) - 0.25;
+        // values[0] = tanh(d/sqrt(2)/EPS);
+        values[0] = tanh(d/(sqrt(2)*EPS));
+    }
+    double EPS;
 };
 
-void SacSolver::save_solution(int sp, Function& u);
+void SacSolver::save_solution(int sp, Function& u)
 {
     *(_pvd_file[sp]) << u;
     for (int i=0; i< u.vector()->size(); ++i) 
     {
-        *(_txt_file[sp])  << (*u->vector())[i] << std::endl;
+        *(_txt_file[sp])  << (*u.vector())[i] << std::endl;
     }
 }
 
@@ -35,7 +38,7 @@ void SacSolver::save_solution(Function& u)
     *(_pvd_file_ave) << u;
     for (int i=0; i< u.vector()->size(); ++i) 
     {
-        *(_txt_file_ave)  << (*u->vector())[i] << std::endl;
+        *(_txt_file_ave)  << (*u.vector())[i] << std::endl;
     }
 
 }
@@ -43,7 +46,8 @@ void SacSolver::save_solution(Function& u)
 double SacSolver::energy(Function& u)
 {
     *(_u->vector()) = *(u.vector());
-    return assemble(_energy);
+    double e = assemble(*_energy);
+    return e;
 }
 
 double SacSolver::spectrum(Function& u)
@@ -69,6 +73,11 @@ void SacSolver::solve()
 {
     double t = Dt;
     double nextSaveTime = t;
+    PETScLUSolver lusolver(reference_to_no_delete_pointer(A),"superlu_dist");
+    Parameters para_("lu_solver");
+    para_.add("symmetric", true);
+    para_.add("reuse_factorization", true);
+    lusolver.update_parameters(para_);
 
     while(t < End_t +DOLFIN_EPS)
     {
@@ -81,29 +90,29 @@ void SacSolver::solve()
             info("Stochostic Process %d", i);
 
             *(_u0->vector()) = *(_u0s[i]->vector());
-            dw = dolfin:rand() - .5;
+            *dw = dolfin::rand() - .5;
 
             assemble(F,*_L);
-            solve(*_A, *(_u->vector()), F);
-            *(_u0s[i]->vector()) = *(_u-vector());
+            lusolver.solve(*(_u->vector()), F);
+            *(_u0s[i]->vector()) = *(_u->vector());
             *(_uAverage->vector()) += *(_u->vector());
 
             double e = energy(*_u);
-            double lambda = specturm(*_u);
+            double lambda = spectrum(*_u);
             
-            info("energy: %f, specturm: %f", e, lambda);
+            info("energy: %f, spectrum: %f", e, lambda);
             if(abs(t - nextSaveTime) <1.e-5)
                     save_solution(i, *_u);
         }
         *(_uAverage->vector()) /= repeat;
         double e = energy(*_uAverage);
-        double lambda = specturm(*_uAverage);
-        info("Average energy: %f, Average specturm: %f", e, lambda);
+        double lambda = spectrum(*_uAverage);
+        info("Average energy: %f, Average spectrum: %f", e, lambda);
         if(abs(t - nextSaveTime) <1.e-5)
         {
             save_solution(*_uAverage);
-            nextSaveTime = t + dt * floor(Save_dt /Dt);
-            if(nextSaveTime > End_T)
+            nextSaveTime = t + Dt * floor(Save_dt /Dt);
+            if(nextSaveTime > End_t)
                 nextSaveTime = End_t;
         }
         end();
@@ -118,12 +127,12 @@ void SacSolver::solve()
 
 SacSolver::SacSolver( Mesh& mesh, Parameters& _para): para(_para)
 {
-    double Eps = (double)para(["epsilon"]),
-           Sigma = (double)para(["sigma"]);
-    Save_dt = (double)para(["SaveDt"]);
-    End_t = (double)para(["EndT"]);
-    Dt = (double)para(["TimeStep"]);
-    repeat = (int)para(["repeat"]);
+    double Eps = (double)para["epsilon"],
+           Sigma = (double)para["sigma"];
+    Save_dt = (double)para["SaveDt"];
+    End_t = (double)para["EndT"];
+    Dt = (double)para["TimeStep"];
+    repeat = (int)para["repeat"];
 
     auto epsilon = std::make_shared<Constant>(Eps);
     auto dt = std::make_shared<Constant>(Dt); 
@@ -142,7 +151,7 @@ SacSolver::SacSolver( Mesh& mesh, Parameters& _para): para(_para)
     _u = std::make_shared<Function>(_V);
     _u0 = std::make_shared<Function>(_V);
     _uAverage = std::make_shared<Function>(_V);
-    InitialConditions u_initial;
+    InitialConditions u_initial(Eps);
     _u0->interpolate(u_initial);
     for(int i = 0; i<repeat; ++i)
     {
@@ -158,12 +167,12 @@ SacSolver::SacSolver( Mesh& mesh, Parameters& _para): para(_para)
         _pvd_file.push_back(tmpfile);
         std::shared_ptr<std::ofstream> tmpfileTxt = std::make_shared<std::ofstream>();
         std::string filename = std::string("./result/sp") +std::to_string(repeat - i) + std::string("/phi.txt");
-        tmpfileTxt->open(filename, std::iso_base::app);
+        tmpfileTxt->open(filename, std::ios_base::app);
         _txt_file.push_back(tmpfileTxt);
     }
     _pvd_file_ave = std::make_shared<File>(std::string("./result/ave") +  std::string("/allen_cahn.pvd"));
     _txt_file_ave = std::make_shared<std::ofstream>();
-    _txt_file_ave->open("./result/ave/phi.txt", std::iso_base::app);
+    _txt_file_ave->open("./result/ave/phi.txt", std::ios_base::app);
 
     std::map<std::string, std::shared_ptr<const GenericFunction>> coef_list
                 = { {"u",       _u},
@@ -174,9 +183,9 @@ SacSolver::SacSolver( Mesh& mesh, Parameters& _para): para(_para)
                     {"sigma",   sigma}};
     info("number of coefficients %d", coef_list.size());
 
-    _a = std::make_shared<AllenCahn2D::bilinearForm>(_V,_V);
+    _a = std::make_shared<AllenCahn2D::BilinearForm>(_V,_V);
     _L = std::make_shared<AllenCahn2D::LinearForm>(_V);
-    _energy = std::makr_shared<EnergyForm::Functional>(_mesh);
+    _energy = std::make_shared<EnergyForm::Functional>(_mesh);
 
     _a->set_some_coefficients(coef_list);
     _L->set_some_coefficients(coef_list);
