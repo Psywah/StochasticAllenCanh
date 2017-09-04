@@ -60,7 +60,8 @@ namespace dolfin
 
     Parameters para;
     std::shared_ptr<Constant> dw;
-    double Save_dt, End_t, Dt, repeat;
+    double Save_dt, End_t, Dt;
+    int repeat;
 
   };
 
