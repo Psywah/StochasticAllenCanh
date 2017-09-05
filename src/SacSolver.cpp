@@ -72,7 +72,7 @@ double SacSolver::spectrum(Function& u)
     info("eigen solver iterations %d converge label %d",
             _eigenSolver->get_iteration_number(), 
             _eigenSolver->get_number_converged());
-    end("eigen solver");
+    end();
     return r;
     //info("Smallest eigenvalue: %f ", r); 
 #else
@@ -107,7 +107,7 @@ void SacSolver::solve()
             assemble(F,*_L);
             begin("linear solver");
             lusolver.solve(*(_u->vector()), F);
-            end("linear solver");
+            end();
             *(_u0s[i]->vector()) = *(_u->vector());
             *(_uAverage->vector()) += *(_u->vector());
 
