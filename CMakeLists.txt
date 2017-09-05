@@ -67,7 +67,7 @@ file(GLOB SAC_LIB_SRC ${SAC_SRC_DIR}/*.cpp)
 add_library(sac_lib SHARED ${SAC_LIB_SRC})
 
 # Executable
-file( GLOB EXESRC STATIC "${CMAKE_CURRENT_SOURCE_DIR}" Main*.cpp)
+file( GLOB EXESRC RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" Main*.cpp)
 
 foreach( srcfile ${EXESRC} )
     string( REGEX REPLACE "\\.[^\\.]*$" ".ex" exectmp ${srcfile} )
