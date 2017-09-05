@@ -55,7 +55,7 @@ namespace dolfin
     std::shared_ptr<Form> _stiff;
     std::shared_ptr<Form> _mass;
     PETScMatrix Stiff, Mass;
-    std::shared_ptr<SLEPcEigenSolver> _eigenSolver;
+    //std::shared_ptr<SLEPcEigenSolver> _eigenSolver;
 #endif
 
     Parameters para;

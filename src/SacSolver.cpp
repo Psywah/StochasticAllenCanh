@@ -45,7 +45,8 @@ void SacSolver::save_solution(Function& u)
 
 double SacSolver::energy(Function& u)
 {
-    *(_u->vector()) = *(u.vector());
+    if(_u->vector() != u.vector())
+        *(_u->vector()) = *(u.vector());
     double e = assemble(*_energy);
     return e;
 }
@@ -54,13 +55,24 @@ double SacSolver::spectrum(Function& u)
 {
 
 #ifdef HAS_SLEPC
-    *(_u->vector()) = *(u.vector());
+    begin("eigen solver");
+    if(_u->vector() != u.vector())
+        *(_u->vector()) = *(u.vector());
     assemble(Stiff, *_stiff);
-    _eigenSolver->parameters["spectrum"]= "smallest magnitude";
-    _eigenSolver->solve();
+
+    auto _eigenSolver = std::make_shared<SLEPcEigenSolver>(reference_to_no_delete_pointer(Stiff), reference_to_no_delete_pointer(Mass));
+    _eigenSolver->parameters["tolerance"]= 1.e-6;
+    _eigenSolver->parameters["maximum_iterations"]= 1000;
+    _eigenSolver->parameters["spectrum"]= "smallest real";
+
+    _eigenSolver->solve(1);
     double r, c;
     PETScVector rx, cx;
     _eigenSolver->get_eigenpair(r, c, rx, cx);
+    info("eigen solver iterations %d converge label %d",
+            _eigenSolver->get_iteration_number(), 
+            _eigenSolver->get_number_converged());
+    end("eigen solver");
     return r;
     //info("Smallest eigenvalue: %f ", r); 
 #else
@@ -93,21 +105,23 @@ void SacSolver::solve()
             *dw = dolfin::rand() - .5;
 
             assemble(F,*_L);
+            begin("linear solver");
             lusolver.solve(*(_u->vector()), F);
+            end("linear solver");
             *(_u0s[i]->vector()) = *(_u->vector());
             *(_uAverage->vector()) += *(_u->vector());
 
             double e = energy(*_u);
             double lambda = spectrum(*_u);
             
-            info("energy: %f, spectrum: %f", e, lambda);
+            info("energy: %.10f, spectrum: %.10f", e, lambda);
             if(abs(t - nextSaveTime) <1.e-5)
                     save_solution(i, *_u);
         }
         *(_uAverage->vector()) /= repeat;
         double e = energy(*_uAverage);
         double lambda = spectrum(*_uAverage);
-        info("Average energy: %f, Average spectrum: %f", e, lambda);
+        info("Average energy: %.10f, Average spectrum: %.10f", e, lambda);
         if(abs(t - nextSaveTime) <1.e-5)
         {
             save_solution(*_uAverage);
@@ -202,8 +216,6 @@ SacSolver::SacSolver( Mesh& mesh, Parameters& _para): para(_para)
     _mass->set_some_coefficients(coef_list);
     assemble(Stiff, *_stiff);
     assemble(Mass, *_mass);
-    _eigenSolver = std::make_shared<SLEPcEigenSolver>(reference_to_no_delete_pointer(Stiff), reference_to_no_delete_pointer(Mass));
-    _eigenSolver->parameters["spectrum"]= "smallest magnitude";
 #else
     info("please install dolfin with slepc");
 #endif
