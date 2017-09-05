@@ -29,8 +29,8 @@ namespace dolfin
     std::shared_ptr<FunctionSpace> _V;
     std::shared_ptr<Form> _a;
     std::shared_ptr<Form> _L;
-    PETScVector F;
-    PETScMatrix A;
+    Vector F;
+    Matrix A;
 
     // boundary conditions
     std::vector<std::shared_ptr<const DirichletBC>> bcs;

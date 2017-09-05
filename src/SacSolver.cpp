@@ -73,7 +73,7 @@ void SacSolver::solve()
 {
     double t = Dt;
     double nextSaveTime = t;
-    PETScLUSolver lusolver(reference_to_no_delete_pointer(A),"superlu_dist");
+    LUSolver lusolver(reference_to_no_delete_pointer(A),"default");
     Parameters para_("lu_solver");
     para_.add("symmetric", true);
     para_.add("reuse_factorization", true);
