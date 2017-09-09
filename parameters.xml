@@ -1,13 +1,14 @@
 <?xml version="1.0"?>
 <dolfin xmlns:dolfin="http://fenicsproject.org">
     <parameters name="problem_parameters">
-        <parameter key="NumberOfCellPerDirection"    type="int"   value="40" />
-        <parameter key="EndT"    type="double"   value=".5" />
-        <parameter key="TimeStep"    type="double"   value=".1" />
-        <parameter key="SaveDt"    type="double"   value=".1" />
+        <parameter key="NumberOfCellPerDirection"    type="int"   value="100" />
+        <parameter key="EndT"    type="double"   value=".02" />
+        <parameter key="TimeStep"    type="double"   value="1e-4" />
+        <parameter key="SaveDt"    type="double"   value=".001" />
         <parameter key="repeat"    type="int"   value="1" />
-        <parameter key="epsilon"    type="double"   value="1." />
-        <parameter key="sigma"    type="double"   value="1.e-5" />
+        <parameter key="epsilon"    type="double"   value="0.01" />
+        <parameter key="sigma"    type="double"   value="1.e-6" />
+        <parameter key="InitialCondition"    type="int"   value="2" />
     </parameters>
 </dolfin>
 

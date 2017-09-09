@@ -10,15 +10,32 @@
 using namespace dolfin;
 
 // Initial conditions
-class InitialConditions : public Expression
+class InitialConditions1 : public Expression
 {
 public:
-    InitialConditions(double eps): Expression(), EPS(eps)
+    InitialConditions1(double eps): Expression(), EPS(eps)
     {}
     void eval(Array<double>& values, const Array<double>& x) const
     {
         double d = sqrt((x[0]-0.5)*(x[0]-0.5)+(x[1]-0.5)*(x[1]-0.5)) - 0.25;
         // values[0] = tanh(d/sqrt(2)/EPS);
+        values[0] = tanh(d/(sqrt(2)*EPS));
+    }
+    double EPS;
+};
+// Initial conditions
+class InitialConditions2 : public Expression
+{
+public:
+    InitialConditions2(double eps): Expression(), EPS(eps)
+    {}
+    void eval(Array<double>& values, const Array<double>& x) const
+    {
+        double d1 = sqrt((x[0]-0.5)*(x[0]-0.5)+(x[1]-0.7)*(x[1]-0.7)) - 0.25;
+        double d2 = sqrt((x[0]-0.5)*(x[0]-0.5)+(x[1]-0.25)*(x[1]-0.25)) - 0.2;
+        // values[0] = tanh(d/sqrt(2)/EPS);
+        double d;
+        d = d1>d2? d2:d1;
         values[0] = tanh(d/(sqrt(2)*EPS));
     }
     double EPS;
@@ -115,15 +132,19 @@ void SacSolver::solve()
             double lambda = spectrum(*_u);
             
             info("energy: %.10f, spectrum: %.10f", e, lambda);
-            if(abs(t - nextSaveTime) <1.e-5)
-                    save_solution(i, *_u);
+            if(fabs(t - nextSaveTime) <1.e-5)
+            {
+                info("save solution at time %f...",t);
+                save_solution(i, *_u);
+            }
         }
         *(_uAverage->vector()) /= repeat;
         double e = energy(*_uAverage);
         double lambda = spectrum(*_uAverage);
         info("Average energy: %.10f, Average spectrum: %.10f", e, lambda);
-        if(abs(t - nextSaveTime) <1.e-5)
+        if(fabs(t - nextSaveTime) <1.e-5)
         {
+            info("save ave solution at time %f...",t);
             save_solution(*_uAverage);
             nextSaveTime = t + Dt * floor(Save_dt /Dt);
             if(nextSaveTime > End_t)
@@ -165,8 +186,14 @@ SacSolver::SacSolver( Mesh& mesh, Parameters& _para): para(_para)
     _u = std::make_shared<Function>(_V);
     _u0 = std::make_shared<Function>(_V);
     _uAverage = std::make_shared<Function>(_V);
-    InitialConditions u_initial(Eps);
-    _u0->interpolate(u_initial);
+    InitialConditions1 u1_initial(Eps);
+    InitialConditions2 u2_initial(Eps);
+
+    if((int)para["InitialCondition"] == 1)
+        _u0->interpolate(u1_initial);
+    else if((int)para["InitialCondition"] ==2)
+        _u0->interpolate(u2_initial);
+
     for(int i = 0; i<repeat; ++i)
     {
         std::shared_ptr<Function> tmp1 = std::make_shared<Function>(_V);
