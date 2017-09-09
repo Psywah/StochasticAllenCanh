@@ -9,6 +9,7 @@
         <parameter key="epsilon"    type="double"   value="0.01" />
         <parameter key="sigma"    type="double"   value="1.e-6" />
         <parameter key="InitialCondition"    type="int"   value="2" />
+        <parameter key="ComputeSpectrum"    type="bool"   value="false" />
     </parameters>
 </dolfin>
 

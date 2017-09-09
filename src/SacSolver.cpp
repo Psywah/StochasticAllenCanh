@@ -71,31 +71,35 @@ double SacSolver::energy(Function& u)
 double SacSolver::spectrum(Function& u)
 {
 
+    if((bool)para["ComputeSpectrum"]){
 #ifdef HAS_SLEPC
-    begin("eigen solver");
-    if(_u->vector() != u.vector())
-        *(_u->vector()) = *(u.vector());
-    assemble(Stiff, *_stiff);
+        begin("eigen solver");
+        if(_u->vector() != u.vector())
+            *(_u->vector()) = *(u.vector());
+        assemble(Stiff, *_stiff);
 
-    auto _eigenSolver = std::make_shared<SLEPcEigenSolver>(reference_to_no_delete_pointer(Stiff), reference_to_no_delete_pointer(Mass));
-    _eigenSolver->parameters["tolerance"]= 1.e-6;
-    _eigenSolver->parameters["maximum_iterations"]= 1000;
-    _eigenSolver->parameters["spectrum"]= "smallest real";
+        auto _eigenSolver = std::make_shared<SLEPcEigenSolver>(reference_to_no_delete_pointer(Stiff), reference_to_no_delete_pointer(Mass));
+        _eigenSolver->parameters["tolerance"]= 1.e-6;
+        _eigenSolver->parameters["maximum_iterations"]= 1000;
+        _eigenSolver->parameters["spectrum"]= "smallest real";
 
-    _eigenSolver->solve(1);
-    double r, c;
-    PETScVector rx, cx;
-    _eigenSolver->get_eigenpair(r, c, rx, cx);
-    info("eigen solver iterations %d converge label %d",
-            _eigenSolver->get_iteration_number(), 
-            _eigenSolver->get_number_converged());
-    end();
-    return r;
-    //info("Smallest eigenvalue: %f ", r); 
+        _eigenSolver->solve(1);
+        double r, c;
+        PETScVector rx, cx;
+        _eigenSolver->get_eigenpair(r, c, rx, cx);
+        info("eigen solver iterations %d converge label %d",
+                _eigenSolver->get_iteration_number(), 
+                _eigenSolver->get_number_converged());
+        end();
+        return r;
+        //info("Smallest eigenvalue: %f ", r); 
 #else
-    info("please install dolfin with slepc");
-    return 0.0;
+        info("please install dolfin with slepc");
+        return 0.0;
 #endif
+    }
+    else
+        return 0.0;
 }
 
 void SacSolver::solve()
@@ -130,7 +134,7 @@ void SacSolver::solve()
 
             double e = energy(*_u);
             double lambda = spectrum(*_u);
-            
+
             info("energy: %.10f, spectrum: %.10f", e, lambda);
             if(fabs(t - nextSaveTime) <1.e-5)
             {
