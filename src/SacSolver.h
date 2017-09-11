@@ -17,6 +17,12 @@ namespace dolfin
 
     void save_solution(Function& u);
     void save_solution(int sp, Function& u);
+
+    void save_energy(double e);
+    void save_energy(int sp, double e);
+    void save_spectrum(double e);
+    void save_spectrum(int sp, double e);
+
     double energy(Function& u);
     double spectrum(Function& u);
     void solve();
@@ -45,8 +51,12 @@ namespace dolfin
 
     std::shared_ptr<File> _pvd_file_ave;
     std::shared_ptr<std::ofstream> _txt_file_ave;
+    std::shared_ptr<std::ofstream> _energy_file_ave;
+    std::shared_ptr<std::ofstream> _spectrum_file_ave;
     std::vector<std::shared_ptr<File>> _pvd_file;
     std::vector<std::shared_ptr<std::ofstream>> _txt_file;
+    std::vector<std::shared_ptr<std::ofstream>> _energy_file;
+    std::vector<std::shared_ptr<std::ofstream>> _spectrum_file;
 
     std::shared_ptr<Form> _energy;
 

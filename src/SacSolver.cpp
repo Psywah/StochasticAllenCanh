@@ -50,6 +50,18 @@ void SacSolver::save_solution(int sp, Function& u)
     }
 }
 
+void SacSolver::save_energy(int sp, double e)
+{
+    *(_energy_file[sp])  << e << std::endl;
+}
+
+void SacSolver::save_spectrum(int sp, double e)
+{
+    *(_spectrum_file[sp])  << e << std::endl;
+}
+
+
+
 void SacSolver::save_solution(Function& u)
 {
     *(_pvd_file_ave) << u;
@@ -57,8 +69,18 @@ void SacSolver::save_solution(Function& u)
     {
         *(_txt_file_ave)  << (*u.vector())[i] << std::endl;
     }
-
 }
+void SacSolver::save_energy( double e)
+{
+    *(_energy_file_ave)  << e << std::endl;
+}
+
+void SacSolver::save_spectrum( double e)
+{
+    *(_spectrum_file_ave)  << e << std::endl;
+}
+
+
 
 double SacSolver::energy(Function& u)
 {
@@ -134,6 +156,8 @@ void SacSolver::solve()
 
             double e = energy(*_u);
             double lambda = spectrum(*_u);
+            save_energy(i,e);
+            save_spectrum(i,lambda);
 
             info("energy: %.10f, spectrum: %.10f", e, lambda);
             if(fabs(t - nextSaveTime) <1.e-5)
@@ -145,6 +169,8 @@ void SacSolver::solve()
         *(_uAverage->vector()) /= repeat;
         double e = energy(*_uAverage);
         double lambda = spectrum(*_uAverage);
+        save_energy(e);
+        save_spectrum(lambda);
         info("Average energy: %.10f, Average spectrum: %.10f", e, lambda);
         if(fabs(t - nextSaveTime) <1.e-5)
         {
@@ -214,10 +240,22 @@ SacSolver::SacSolver( Mesh& mesh, Parameters& _para): para(_para)
         std::string filename = std::string("./result/sp") +std::to_string(repeat - i) + std::string("/phi.txt");
         tmpfileTxt->open(filename, std::ios_base::app);
         _txt_file.push_back(tmpfileTxt);
+        std::shared_ptr<std::ofstream> tmpfileTxt1 = std::make_shared<std::ofstream>();
+        std::string filename1 = std::string("./result/sp") +std::to_string(repeat - i) + std::string("/energy.txt");
+        tmpfileTxt1->open(filename1, std::ios_base::app);
+        _energy_file.push_back(tmpfileTxt1);
+        std::shared_ptr<std::ofstream> tmpfileTxt2 = std::make_shared<std::ofstream>();
+        std::string filename2 = std::string("./result/sp") +std::to_string(repeat - i) + std::string("/spectrum.txt");
+        tmpfileTxt2->open(filename2, std::ios_base::app);
+        _spectrum_file.push_back(tmpfileTxt2);
     }
     _pvd_file_ave = std::make_shared<File>(std::string("./result/ave") +  std::string("/allen_cahn.pvd"));
     _txt_file_ave = std::make_shared<std::ofstream>();
     _txt_file_ave->open("./result/ave/phi.txt", std::ios_base::app);
+    _energy_file_ave = std::make_shared<std::ofstream>();
+    _energy_file_ave->open("./result/ave/energy.txt", std::ios_base::app);
+    _spectrum_file_ave = std::make_shared<std::ofstream>();
+    _spectrum_file_ave->open("./result/ave/spectrum.txt", std::ios_base::app);
 
     std::map<std::string, std::shared_ptr<const GenericFunction>> coef_list
                 = { {"u",       _u},
