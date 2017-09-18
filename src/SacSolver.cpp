@@ -40,6 +40,24 @@ public:
     }
     double EPS;
 };
+// Initial conditions
+class InitialConditions3 : public Expression
+{
+public:
+    InitialConditions3(double eps): Expression(), EPS(eps)
+    {}
+    void eval(Array<double>& values, const Array<double>& x) const
+    {
+        double d1 = sqrt((x[0]-0.5)*(x[0]-0.5)+(x[1]-0.5)*(x[1]-0.5)) - 0.1;
+        double d2 = sqrt((x[0]-0.5)*(x[0]-0.5)+(x[1]-0.5)*(x[1]-0.5)) - 0.25;
+        // values[0] = tanh(d/sqrt(2)/EPS);
+        double d;
+        d = -d1>d2? -d1:d2;
+        values[0] = -tanh(d/(sqrt(2)*EPS));
+    }
+    double EPS;
+};
+
 
 void SacSolver::save_solution(int sp, Function& u)
 {
@@ -218,11 +236,14 @@ SacSolver::SacSolver( Mesh& mesh, Parameters& _para): para(_para)
     _uAverage = std::make_shared<Function>(_V);
     InitialConditions1 u1_initial(Eps);
     InitialConditions2 u2_initial(Eps);
+    InitialConditions3 u3_initial(Eps);
 
     if((int)para["InitialCondition"] == 1)
         _u0->interpolate(u1_initial);
     else if((int)para["InitialCondition"] ==2)
         _u0->interpolate(u2_initial);
+    else if((int)para["InitialCondition"] ==3)
+        _u0->interpolate(u3_initial);
 
     for(int i = 0; i<repeat; ++i)
     {
